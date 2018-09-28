@@ -1,0 +1,25 @@
+sudo: required
+services:
+ - docker
+
+before_install:
+ - docker build -t kevani/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+ - docker run kevani/react-test npm test -- --coverage
+
+after_success:
+ - docker build -t kevani/multi-client ./client
+ - docker build -t kevani/multi-nginx ./nginx
+ - docker build -t kevani/multi-server ./server
+ - docker build -t kevani/multi-worker ./worker
+
+# log in to the docker cli
+ - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+
+
+# take those images and push them to docker hub
+ - docker push kevani/multi-client
+ - docker push kevani/multi-nginx
+ - docker push kevani/multi-server
+ - docker push kevani/multi-worker
